@@ -42,6 +42,11 @@ function ConvertTo-HashTable {
     
     begin {
         [string]$Content = $null
+        [string[]]$allowedCommands = @(
+            'New-TimeSpan'
+        )
+        [string[]]$allowedVariables = @()
+        [bool]$allowEnvVariables = $false
     }
     
     process {
@@ -71,10 +76,13 @@ function ConvertTo-HashTable {
         Try {
             $scriptBlock = [scriptblock]::Create($content)
             if ($Force) {} else {
-                $scriptBlock.CheckRestrictedLanguage([string[]]@(), [string[]]@(), $false)
+                $scriptBlock.CheckRestrictedLanguage(
+                    $allowedCommands, $allowedVariables, $allowEnvVariables
+                )
             }
             & $scriptBlock
         } Catch {
+            Write-Warning ($Error[0].Exception.Message)
             throw "Unable to execute parsed text as a scriptblock!"
         }
 
