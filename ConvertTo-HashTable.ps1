@@ -41,12 +41,15 @@ function ConvertTo-HashTable {
     )
     
     begin {
-        [string]$Content = $null
+        
+        $Content = New-Object -TypeName System.Collections.ArrayList
+
         [string[]]$allowedCommands = @(
             'New-TimeSpan'
         )
         [string[]]$allowedVariables = @()
         [bool]$allowEnvVariables = $false
+    
     }
     
     process {
@@ -54,14 +57,14 @@ function ConvertTo-HashTable {
         if ($PSCmdlet.ParameterSetName -eq 'byContent') {
 
             foreach ($line in $HashTableContent) {
-                $Content = $Content + $line + "`n"
+                [void]($Content.Add($line))
             }
             
         } elseif ($PSCmdlet.ParameterSetName -eq 'byPath') {
 
             Try {
                 Write-Verbose "Content being parsed from config file: [$($Path)]."
-                $content = Get-Content -Path $Path -Raw -ErrorAction Stop
+                $Content = Get-Content -Path $Path -ErrorAction Stop
             } Catch {
                 throw "Unable to parse file content: $($Error[0].Exception.Message)"
             }
@@ -72,9 +75,12 @@ function ConvertTo-HashTable {
     
     end {
 
+        $rawContent = @($Content).Where({$_ -notmatch '^#'})
+        $strContent = $rawContent -join "`n"
+
         # Define a hashtable for all tasks (KEY=pathToParentFolder, VALUE=retentionInDays)
         Try {
-            $scriptBlock = [scriptblock]::Create($content)
+            $scriptBlock = [scriptblock]::Create($strContent)
             if ($Force) {} else {
                 $scriptBlock.CheckRestrictedLanguage(
                     $allowedCommands, $allowedVariables, $allowEnvVariables
