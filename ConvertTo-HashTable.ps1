@@ -88,7 +88,7 @@ function ConvertTo-HashTable {
             }
             & $scriptBlock
         } Catch {
-            Write-Warning ($Error[0].Exception.Message)
+            Write-Warning "$($Error[0].Exception.Message)"
             throw "Unable to execute parsed text as a scriptblock!"
         }
 
