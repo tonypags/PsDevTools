@@ -33,7 +33,7 @@ function ConvertTo-HashTable {
         [string[]]
         $HashTableContent,
 
-        # Does not check the loic before executing the code contained in the PSD1 file.
+        # Does not check the logic before executing the code contained in the PSD1 file.
         [Parameter()]
         [switch]
         $Force
