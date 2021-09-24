@@ -25,12 +25,12 @@ function Remove-HTMLTags {
 
         (
             $Html -replace 
-                '\n',"`n" -replace
-                "<br>","`n" -replace
+                '\s\s+',' ' -replace
+                '<br>',"`n" -replace
+                '\\n',"`n" -replace
                 '&#160'," " -replace
-                "&nbsp;"," " -replace
-                '<[^>]+?>' -replace
-                '\s\s+',' '
+                '&nbsp;'," " -replace
+                '<[^>]+?>'
         ).Trim()
         
     }
