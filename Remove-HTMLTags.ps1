@@ -1,9 +1,9 @@
 function Remove-HTMLTags {
     <#
     .SYNOPSIS
-    Short description
+    Converts HTML into a semi-readable text block.
     .DESCRIPTION
-    Long description
+    Converts HTML into a semi-readable text block.
     .EXAMPLE
     PS C:\> Remove-HTMLTags $email.Body.text
     .EXAMPLE
@@ -37,4 +37,4 @@ function Remove-HTMLTags {
 
     end {}
 
-}
+}#END: function Remove-HTMLTags {}
