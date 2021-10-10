@@ -29,7 +29,7 @@ function Out-Reverse {
 
     process {
 
-        foreach ($obj in $InputObject) {
+        foreach ($obj in @($InputObject)) {
             [void]$OutputObject.Add($obj)
         }
 
