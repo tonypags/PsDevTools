@@ -66,7 +66,7 @@ function ConvertTo-HashTable {
                 Write-Verbose "Content being parsed from config file: [$($Path)]."
                 $Content = Get-Content -Path $Path -ErrorAction Stop
             } Catch {
-                throw "Unable to parse file content: $($Error[0].Exception.Message)"
+                throw "Unable to parse file content: $($_.exception.message)"
             }
 
         }
@@ -88,7 +88,7 @@ function ConvertTo-HashTable {
             }
             & $scriptBlock
         } Catch {
-            Write-Warning "$($Error[0].Exception.Message)"
+            Write-Warning "$($_.exception.message)"
             throw "Unable to execute parsed text as a scriptblock!"
         }
 
