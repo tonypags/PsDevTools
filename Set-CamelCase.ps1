@@ -21,6 +21,10 @@ function Set-CamelCase {
     camelCase
 
     .EXAMPLE
+    Set-CamelCase -String 'uppercase'
+    Uppercase
+
+    .EXAMPLE
     'A very Long stRing of words IN miXed case' | Set-CamelCase
     aVeryLongStringOfWordsInMixedCase
     
@@ -31,7 +35,7 @@ function Set-CamelCase {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory,ValueFromPipeline)]
-        [string[]]$String,
+        [string]$String,
         [switch]$SkipToLower
     )
 
