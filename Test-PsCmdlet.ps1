@@ -14,6 +14,7 @@ function Test-PsCmdlet {
         PsUICulture = $PsUICulture
         PsVersionTable = $PsVersionTable
         Pwd = $Pwd
+        xModuleBase = $MyInvocation.MyCommand.Module.ModuleBase
     }
 
 }
