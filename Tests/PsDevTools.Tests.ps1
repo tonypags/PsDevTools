@@ -44,6 +44,18 @@ Describe 'PsDevTools Tests' {
             $script:thisName = 'Set-CamelCase'
         }
 
+        It 'Compares array order' {
+            $a1 = @('red','green','blue')
+            $a2 = @('red','green','blue')
+            $a3 = @('gray','blue','purple')
+            $a4 = @('red','blue','green')
+            $a5 = @('gray','blue','purple','red')
+            Compare-ArrayOrder $a1 $a2 -wa 0 | Should -Be $true
+            Compare-ArrayOrder $a3 $a2 -wa 0 | Should -Be $false
+            Compare-ArrayOrder $a2 $a4 -wa 0 | Should -Be $false
+            Compare-ArrayOrder $a3 $a5 -wa 0 | Should -Be $false
+        }
+
     }
 
     Context 'Clean up' {
