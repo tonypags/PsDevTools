@@ -34,7 +34,7 @@ function Compare-ArrayOrder {
                 $ReferenceArray[$i]):$($DifferenceArray[$i]
             )"
             $doesItMatch = $false
-            $failedItems.Add([pscustomobject]@{
+            [void]$failedItems.Add([pscustomobject]@{
                 index = $i
                 ReferenceValue  = $ReferenceArray[$i]
                 DifferenceValue = $DifferenceArray[$i]
