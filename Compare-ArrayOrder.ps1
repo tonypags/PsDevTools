@@ -5,10 +5,13 @@ function Compare-ArrayOrder {
         [system.object[]]
         $ReferenceArray,
         [system.object[]]
-        $DifferenceArray    
+        $DifferenceArray,
+        [switch]
+        $Quiet
     )
 
     $doesItMatch = $true
+    $failedItems = [system.collections.arraylist]@()
 
     if (
         $ReferenceArray.Count -ne
@@ -16,7 +19,11 @@ function Compare-ArrayOrder {
     ) {
         Write-Warning "Arrays have different counts"
         $doesItMatch = $false
-        break
+        $failedItems.Add([pscustomobject]@{
+            index = -1
+            ReferenceValue  = $ReferenceArray.Count
+            DifferenceValue = [math]::Abs(($ReferenceArray.Count - $DifferenceArray.Count))
+        })
     }
 
     for ($i = 0; $i -lt $ReferenceArray.Count; $i++) {
@@ -27,11 +34,19 @@ function Compare-ArrayOrder {
                 $ReferenceArray[$i]):$($DifferenceArray[$i]
             )"
             $doesItMatch = $false
-            break
+            $failedItems.Add([pscustomobject]@{
+                index = $i
+                ReferenceValue  = $ReferenceArray[$i]
+                DifferenceValue = $DifferenceArray[$i]
+            })
         }
 
     }
 
-    $doesItMatch
+    if ($Quiet) {
+        $doesItMatch
+    } else {
+        $failedItems
+    }
 
 }#END: function Compare-ArrayOrder
