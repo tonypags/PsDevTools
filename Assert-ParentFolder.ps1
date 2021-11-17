@@ -9,7 +9,10 @@ function Assert-ParentFolder {
         $Parent,
 
         [switch]
-        $Force
+        $Force,
+
+        [switch]
+        $PassThru
     )
     
     begin {
@@ -24,13 +27,11 @@ function Assert-ParentFolder {
         } else {
             if ($Force.IsPresent) {$itemProps.Force = $true}
             $itemProps.Force = $Parent
-            New-Item @itemProps
+            New-Item @itemProps | Out-Null
         }
+
+        if ($PassThru) {Get-Item $Parent}
         
     }
     
-    end {
-        
-    }
-
 }#END: function Assert-ParentFolder
