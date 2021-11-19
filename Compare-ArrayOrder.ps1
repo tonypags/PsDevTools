@@ -19,11 +19,11 @@ function Compare-ArrayOrder {
     ) {
         Write-Warning "Arrays have different counts"
         $doesItMatch = $false
-        $failedItems.Add([pscustomobject]@{
+        [void]($failedItems.Add([pscustomobject]@{
             index = -1
             ReferenceValue  = $ReferenceArray.Count
             DifferenceValue = [math]::Abs(($ReferenceArray.Count - $DifferenceArray.Count))
-        })
+        }))
     }
 
     for ($i = 0; $i -lt $ReferenceArray.Count; $i++) {
@@ -34,11 +34,11 @@ function Compare-ArrayOrder {
                 $ReferenceArray[$i]):$($DifferenceArray[$i]
             )"
             $doesItMatch = $false
-            [void]$failedItems.Add([pscustomobject]@{
+            [void]($failedItems.Add([pscustomobject]@{
                 index = $i
                 ReferenceValue  = $ReferenceArray[$i]
                 DifferenceValue = $DifferenceArray[$i]
-            })
+            }))
         }
 
     }
