@@ -17,7 +17,7 @@ function Assert-ParentFolder {
     
     begin {
         $itemProps = @{}
-        $itemProps.ItemType = 'File'
+        $itemProps.ItemType = 'Directory'
     }
     
     process {
@@ -26,7 +26,7 @@ function Assert-ParentFolder {
             Write-Verbose "Folder already exists"
         } else {
             if ($Force.IsPresent) {$itemProps.Force = $true}
-            $itemProps.Force = $Parent
+            $itemProps.Path = $Parent
             New-Item @itemProps | Out-Null
         }
 
