@@ -2,10 +2,17 @@ function Compare-ArrayOrder {
 
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory,Position=0)]
+        [ValidateNotNullOrEmpty()]
         [system.object[]]
         $ReferenceArray,
+
+        [Parameter(Mandatory,Position=1)]
+        [ValidateNotNullOrEmpty()]
         [system.object[]]
         $DifferenceArray,
+        
+        [Parameter()]
         [switch]
         $Quiet
     )
