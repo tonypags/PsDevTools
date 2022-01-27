@@ -14,4 +14,6 @@ function Test-Port {
 
     if ($connection.Connected) {$true} else {$false}
 
+    Write-Warning "PsDevTools\Test-Port is depreciated. Please use PsWinAdmin\Test-Port"
+
 }#END: function Test-Port
