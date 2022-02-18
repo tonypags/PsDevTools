@@ -42,25 +42,21 @@ function Get-String
         $Pattern
     )
 
-    Begin
-    {
-    }
-    Process
-    {
+    Process {
         # Prep the extention strings for comparison
-        $FileTypes = $FileTypes | foreach -Process {
+        $FileTypes = $FileTypes | ForEach-Object -Process {
             $_ -replace '\.'
         }
         
         # Start with given folder path and recurse all ps1, psd1, psm1 files
         $RecursedFiles = Get-ChildItem -Path $Directory -File -Recurse |
-            where{$FileTypes -contains ($_.Extension -replace '\.')}
+            Where-Object {$FileTypes -contains ($_.Extension -replace '\.')}
 
         $MatchedLines = $RecursedFiles | Select-String -Pattern $Pattern 
     }
-    End
-    {
-        Write-Output $MatchedLines
+
+    End {
+        $MatchedLines
     }
 }
 
