@@ -31,7 +31,7 @@ function Add-ArrayElement {
 
     Add an element into the 2nd position of an array using the index parameter
     .EXAMPLE
-    @('ready','go') | Add-ArrayElement 'set 'go'
+    @('ready','go') | Add-ArrayElement 'set' 'go'
     ready
     set
     go

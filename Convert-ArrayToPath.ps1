@@ -35,7 +35,7 @@ function Convert-ArrayToPath {
         }
     
     }
-    
+
     end {
 
         Invoke-Expression ($cmdString -f $arrParams)

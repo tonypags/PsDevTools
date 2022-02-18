@@ -42,6 +42,7 @@ function Set-String
         # We will record the line prior to and after change,
         #  along with path info, etc. 
     }
+
     Process
     {
         if ($pscmdlet.ShouldProcess(
