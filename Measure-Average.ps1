@@ -1,15 +1,37 @@
 function Measure-Average {
+    <#
+    .SYNOPSIS
+    Calculates the average of an array of numbers
+    .DESCRIPTION
+    Allows the user to choose average mean, median,
+    or mode and returns the numerical result.
+    .EXAMPLE
+    Measure-Average @(1,3,44,3,14,6,100)
+    24.4285714285714
+
+    Returns the average (mean)
+    .EXAMPLE
+    Measure-Average @(1,3,44,3,14,6,100) Median
+    6
+    
+    Returns the average (median)
+    .EXAMPLE
+    Measure-Average @(1,3,44,3,14,6,100) Mode
+    3
+
+    Returns the average (mode)
+    #>
 
     [CmdletBinding()]
 
     param(
         # Array of numbers to average
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory,Position=0)]
         [System.Object[]]
         $Data,
 
         # Array of numbers to average
-        [Parameter()]
+        [Parameter(Position=1)]
         [ValidateNotNull()]
         [ValidateSet('Mean','Median','Mode')]
         [string]

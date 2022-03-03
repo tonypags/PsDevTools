@@ -54,6 +54,17 @@ Describe 'PsDevTools Tests' {
             Compare-ArrayOrder $a3 $a2 -wa 0 | Should -Be $false
             Compare-ArrayOrder $a2 $a4 -wa 0 | Should -Be $false
             Compare-ArrayOrder $a3 $a5 -wa 0 | Should -Be $false
+
+            $script:thisName = 'Compare-ArrayOrder'
+        }
+
+        It 'Averages an array' {
+            $arr = @(1,3,44,3,14,6,100)
+            Measure-Average $arr | Should -Be 24.4285714285714
+            Measure-Average $arr Median | Should -Be 6
+            Measure-Average $arr Mode | Should -Be 3
+
+            $script:thisName = 'Measure-Average'
         }
 
     }
