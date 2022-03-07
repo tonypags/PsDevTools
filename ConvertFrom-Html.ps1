@@ -5,12 +5,6 @@ function ConvertFrom-Html {
     .DESCRIPTION
     Scrapes a given numbered table for the provided Web 
     Request response from the Invoke-WebRequest cmdlet.
-    .PARAMETER WebRequest
-    HtmlWebResponseObject returned from Invoke-WebRequest cmdlet. 
-    .PARAMETER Html
-    Raw HTML string from the webpage.
-    .PARAMETER TableIndex
-    Index number of the table on the page, in order. First table is default.
     .EXAMPLE
     PS > $w = iwr 'https://www.w3schools.com/html/html_tables.asp'
     
@@ -59,6 +53,8 @@ function ConvertFrom-Html {
     #>
     [CmdletBinding()]
     param(
+
+    # The result of Invoke-WebRequest
         [Parameter(
             Mandatory,
             Position=0,
@@ -68,6 +64,7 @@ function ConvertFrom-Html {
         [Microsoft.PowerShell.Commands.HtmlWebResponseObject]
         $WebRequest,
 
+        # Raw HTML text with at least 1 pair of <table> tags
         [Parameter(
             Mandatory,
             Position=0,
@@ -77,9 +74,14 @@ function ConvertFrom-Html {
         [string]
         $Html,
 
+        # Choose a table found on the page. First table is default.
         [Parameter(Position=1)]
         [uint16]
-        $TableIndex = 0
+        $TableIndex = 0,
+
+        # Force using the first row as column headers
+        [switch]
+        $FirstRowHeaders
     )
 
     ## Extract the tables out of the web request
@@ -95,23 +97,30 @@ function ConvertFrom-Html {
     
     }
 
-    $table = $tables[$TableNumber]
+    $table = $tables[$TableIndex]
     $titles = @()
     $rows = @($table.Rows)
 
     ## Go through all of the rows in the table
+    $rc = 0
     foreach($row in $rows) {
         
         $cells = @($row.Cells)
+        Write-Debug "Inspect `$cells ?"
         ## If we've found a table header, remember its titles
-        if($cells[0].tagName -eq "TH") {
-            $titles = @($cells | % { ("" + $_.InnerText).Trim() })
+        # If the set contains no TH tag, assume the first row has the headers
+        if(
+            $cells[0].tagName -eq "TH" -or
+            ($rc -eq 0 -and $FirstRowHeaders.IsPresent)
+        ) {
+            $titles = @($cells | ForEach-Object { ("" + $_.InnerText).Trim() })
+            $rc++
             continue
         }
 
         ## If we haven't found any table headers, make up names "P1", "P2", etc.
         if(-not $titles) {
-            $titles = @(1..($cells.Count + 2) | % { "P$_" })
+            $titles = @(1..($cells.Count + 2) | ForEach-Object { "P$_" })
         }
 
         ## Now go through the cells in the the row. For each, try to find the
@@ -120,12 +129,16 @@ function ConvertFrom-Html {
         $resultObject = [Ordered] @{}
         for($counter = 0; $counter -lt $cells.Count; $counter++) {
             $title = $titles[$counter]
-            if(-not $title) { continue }
+            if(-not $title) {
+                $rc++
+                continue
+            }
             $resultObject[$title] = ("" + $cells[$counter].InnerText).Trim()
         }
 
         ## And finally cast that hashtable to a PSCustomObject
         [PSCustomObject] $resultObject
+        $rc++
 
     }
 

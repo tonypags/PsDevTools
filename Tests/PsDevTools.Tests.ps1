@@ -67,6 +67,22 @@ Describe 'PsDevTools Tests' {
             $script:thisName = 'Measure-Average'
         }
 
+        It 'Extracts a table from a web page 2 ways' {
+            $w = Invoke-WebRequest 'https://www.w3schools.com/html/html_tables.asp'
+            $byR = $w | ConvertFrom-Html
+            $byH = $w.RawContent | ConvertFrom-html
+            
+            $colR = @($byR | Get-Member -Type '*Property').Name
+            $colH = @($byH | Get-Member -Type '*Property').Name
+
+            $byR.Count | Should -BeGreaterThan 2
+            $byH.Count | Should -BeGreaterThan 2
+            $byR."$($colR[0])" | Should -BeOfType [string]
+            $byH."$($colH[0])" | Should -BeOfType [string]
+
+            $script:thisName = 'ConvertFrom-Html'
+        }
+
     }
 
     Context 'Clean up' {
