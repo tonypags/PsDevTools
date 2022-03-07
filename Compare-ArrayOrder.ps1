@@ -1,5 +1,13 @@
 function Compare-ArrayOrder {
-
+    <#
+    .SYNOPSIS
+    Compare small arrays against each other, including order of elements.
+    .NOTES
+    For larger arrays, use this logic. 
+    $diff = [Collections.Generic.HashSet[string]]$Collection1
+    $diff.SymmetricExceptWith([Collections.Generic.HashSet[string]]$Collection2.BaseName)
+    $diffArray = [string[]]$diff
+    #>
     [CmdletBinding()]
     param (
         [Parameter(Mandatory,Position=0)]
