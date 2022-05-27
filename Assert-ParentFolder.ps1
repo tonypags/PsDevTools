@@ -1,4 +1,9 @@
 function Assert-ParentFolder {
+    <#
+    .EXAMPLE
+    Assert-ParentFolder -Parent C:\temp\parent
+    Creates a new folder if one doesn't already exist.
+    #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Mandatory,
