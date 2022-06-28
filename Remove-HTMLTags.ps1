@@ -15,6 +15,7 @@ function Remove-HTMLTags {
             ValueFromPipeline,
             ValueFromPipelineByPropertyName
         )]
+        [Alias('string')]
         [string]
         $Html
     )
