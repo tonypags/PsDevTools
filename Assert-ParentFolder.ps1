@@ -6,7 +6,7 @@ function Assert-ParentFolder {
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(Mandatory,
+        [Parameter(Mandatory,Position=0,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
         [Alias('Path','Folder')]
