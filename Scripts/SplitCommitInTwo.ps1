@@ -29,6 +29,13 @@ foreach ($item in $filesInCommit) {
         git rm $file
         git commit -n $file -m "Removed $($file)`n$message"
         
+    } elseif ($status -eq 'R') {
+
+        Write-Warning "Rename status not yet supported!"
+        Write-Host "Re-committing using original commit..."
+        Write-Debug "Make sure the 2nd item isn't duplicate committed!!!" -debug
+        # git commit -m "$message"
+        
     } else {
         Write-Host "unknown status $file"
     }
