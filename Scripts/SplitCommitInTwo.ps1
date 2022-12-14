@@ -14,7 +14,7 @@ $filesInCommit = @(git status --porcelain --untracked-files=no)
 foreach ($item in $filesInCommit) {
 
     $status = $item[0]
-    $file = ($item -replace "^$($status)").Trim().Trim('"')
+    $file = ($item -replace "^$($status)").Trim().Trim('"') # handle " chars
     Write-Host $status '|' $file
 
     if ($status -eq 'M') {
