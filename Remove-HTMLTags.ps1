@@ -8,6 +8,8 @@ function Remove-HTMLTags {
     PS C:\> Remove-HTMLTags $email.Body.text
     .EXAMPLE
     PS C:\> $email.Body.text | Remove-HTMLTags
+    .EXAMPLE
+    PS C:\> $email.Body.text | Remove-HTMLTags -ReplaceTagsWithLineBreaks
     #>
     param(
         [Parameter(
@@ -17,23 +19,36 @@ function Remove-HTMLTags {
         )]
         [Alias('string')]
         [string]
-        $Html
+        $Html,
+
+        # Replace all tags with line breaks, instead of just removing the tags
+        [Parameter()]
+        [switch]
+        $ReplaceTagsWithLineBreaks
+
     )
     
     begin {}
 
     process {
 
-        (
+        $stageOne = (
             $Html -replace 
                 '\s\s+',' ' -replace
                 '<br>',"`n" -replace
                 '\\n',"`n" -replace
                 '&#160'," " -replace
-                '&nbsp;'," " -replace
-                '<[^>]+?>'
-        ).Trim()
+                '&nbsp;'," "
+        )
+
+
+        $stageTwo = if ($ReplaceTagsWithLineBreaks.IsPresent) {
+            $stageOne -replace '<[^>]+?>',"`n"
+        } else {
+            $stageOne -replace '<[^>]+?>'
+        }
         
+        $stageTwo.Trim()
     }
 
     end {}
