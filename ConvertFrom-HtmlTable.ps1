@@ -1,4 +1,4 @@
-function ConvertFrom-Html {
+function ConvertFrom-HtmlTable {
     <#
     .SYNOPSIS
     Attempts to scrape table from webpage.
@@ -9,7 +9,7 @@ function ConvertFrom-Html {
     PS > $w = iwr 'https://www.w3schools.com/html/html_tables.asp'
     
     # Return the first table on a page
-    PS > $w | ConvertFrom-Html | ft
+    PS > $w | ConvertFrom-HtmlTable | ft
     
     Company                      Contact          Country
     -------                      -------          -------
@@ -21,7 +21,7 @@ function ConvertFrom-Html {
     Magazzini Alimentari Riuniti Giovanni Rovelli Italy
 
     # Again, using a different method requiring only the raw HTML
-    PS > $w.RawContent | ConvertFrom-html | ft
+    PS > $w.RawContent | ConvertFrom-HtmlTable | ft
 
     Company                      Contact          Country
     -------                      -------          -------
@@ -33,7 +33,7 @@ function ConvertFrom-Html {
     Magazzini Alimentari Riuniti Giovanni Rovelli Italy
 
     # Again, with the TableIndex parameter to get the 2nd table
-    PS > $w | ConvertFrom-Html -TableIndex 1 | ft
+    PS > $w | ConvertFrom-HtmlTable -TableIndex 1 | ft
 
     Tag        Description
     ---        -----------
@@ -52,6 +52,7 @@ function ConvertFrom-Html {
     From https://www.leeholmes.com/blog/2015/01/05/extracting-tables-from-powershells-invoke-webrequest/
     #>
     [CmdletBinding()]
+    [Alias('ConvertFrom-Html')]
     param(
 
     # The result of Invoke-WebRequest
@@ -142,4 +143,4 @@ function ConvertFrom-Html {
 
     }
 
-}#END: function ConvertFrom-Html
+}#END: function ConvertFrom-HtmlTable
