@@ -46,6 +46,7 @@ function ConvertTo-HashTable {
 
         [string[]]$allowedCommands = @(
             'New-TimeSpan'
+            'Get-Date'
         )
         [string[]]$allowedVariables = @()
         [bool]$allowEnvVariables = $false
