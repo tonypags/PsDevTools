@@ -1,12 +1,15 @@
 function Start-FetchAllRemotes {
   <#
   .SYNOPSIS
-  Update local index base don remote's current state.
+  Update local index based on remote's current state.
   #>
   [Cmdletbinding()]
   [Alias('fall','Fetch-AllRemotes')]
   param(
-    [string]$ModulePath = (Get-Location).Path
+    [Parameter()]
+    [Alias('Path','Location')]
+    [string]
+    $ModulePath = (Get-Location).Path
   )
 
   Push-Location
