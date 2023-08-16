@@ -14,12 +14,18 @@ function Measure-Average {
     Measure-Average @(1,3,44,3,14,6,100) Median
     6
     
-    Returns the average (median)
+    Returns the median
     .EXAMPLE
     Measure-Average @(1,3,44,3,14,6,100) Mode
     3
 
-    Returns the average (mode)
+    Returns the most common item (mode)
+    .EXAMPLE
+    Measure-Average @(1,3,44,3,14,6,100,6) Mode
+    3
+    6
+
+    Returns the most common items (modes)
     #>
 
     [CmdletBinding()]
@@ -56,32 +62,16 @@ function Measure-Average {
                 $twoMiddleItems = $Data[$Data.Count/2], $Data[$Data.count/2-1]
                 ($twoMiddleItems | Measure-Object -Average).average
             }            
-
         }
 
         'Mode'   {
 
             $sortedByCount = $Data | Group-Object | Sort-Object -Descending Count
             $maxCount = $sortedByCount[0].Count
+
+            # Return multiple values is desired when found
             $Modes = ($sortedByCount | Where-Object Count -eq $maxCount).Name
             $Modes
-
-            # $modevalue = @()
-            # $i=0
-            # foreach ($group in $sortedByCount) {
-
-            #     if ($group.count -ge $i) {
-                
-            #         $i = $group.count
-            #         $modevalue += $group.Name
-                
-            #     } else {
-            #         break
-            #     }
-
-            # }
-            # $modevalue
-
         }
 
         Default {
