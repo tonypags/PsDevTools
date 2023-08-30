@@ -1,5 +1,9 @@
 # FROM https://hisham.hm/2019/02/12/splitting-a-git-commit-into-one-commit-per-file/
 ## Edited for PowerShell by Tony Pagliaro Sept 2022
+#
+## TESTED for actions in normal shell: M=??, A=OK, D=??, R=??
+## TESTED for actions during git rebase: M=??, A=??, D=??, R=??
+#
 
 $ErrorActionPreference = 'Stop'
 
@@ -37,7 +41,7 @@ foreach ($item in $filesInCommit) {
         # git commit -m "$message"
         
     } else {
-        Write-Host "unknown status $file"
+        Write-Warning "Unknown status for file '$file'. Stop to debug?" -wa:inquire
     }
 }
 
