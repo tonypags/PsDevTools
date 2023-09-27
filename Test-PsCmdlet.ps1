@@ -4,6 +4,7 @@ function Test-PsCmdlet {
         NestedPromptLevel = $NestedPromptLevel
         ExecutionContext = $ExecutionContext
         PID = $PID
+        Profile = $PROFILE
         PsCmdlet = $PsCmdlet
         PSCommandPath = $PSCommandPath
         PsCulture = $PsCulture
