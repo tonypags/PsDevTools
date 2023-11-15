@@ -2,7 +2,7 @@
 ## Edited for PowerShell by Tony Pagliaro Sept 2022
 #
 ## TESTED for actions in normal shell: M=??, A=OK, D=??, R=??
-## TESTED for actions during git rebase: M=??, A=??, D=??, R=??
+## TESTED for actions during git rebase: M=OK, A=??, D=??, R=??
 #
 
 $ErrorActionPreference = 'Stop'
