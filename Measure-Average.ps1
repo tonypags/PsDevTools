@@ -40,6 +40,7 @@ function Measure-Average {
         [Parameter(Position=1)]
         [ValidateNotNull()]
         [ValidateSet('Mean','Median','Mode')]
+        [Alias('Method')]
         [string]
         $Average = 'Mean'
     )
