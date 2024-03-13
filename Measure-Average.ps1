@@ -45,6 +45,13 @@ function Measure-Average {
         $Average = 'Mean'
     )
 
+    # Ensure no null values are passed
+    $count1 = ($Data | Measure-Object).Count
+    $Data = $Data | Where-Object {$null -ne $_}
+    $count2 = ($Data | Measure-Object).Count
+    $diffC = $count1 - $count2
+    if ($diffC) {Write-Warning "[Measure-Average] Filtered out $($diffC) null data point(s)"}
+
     switch ($Average) {
 
         'Mean'   {
