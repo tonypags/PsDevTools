@@ -33,6 +33,7 @@ function Measure-Average {
     param(
         # Array of numbers to average
         [Parameter(Mandatory,Position=0)]
+        [AllowNull()]
         [System.Object[]]
         $Data,
 
