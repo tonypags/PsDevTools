@@ -1,6 +1,10 @@
 # FROM https://hisham.hm/2019/02/12/splitting-a-git-commit-into-one-commit-per-file/
 ## Edited for PowerShell by Tony Pagliaro Sept 2022
 #
+# 1. Run an interactive rebase: git rebase -i <hash#>
+# 2. Replace pick with "edit" for the commit you want to split.
+# 3. During the edit phase, run this script.
+#
 ## TESTED for actions in normal shell: M=??, A=OK, D=??, R=??
 ## TESTED for actions during git rebase: M=OK, A=??, D=??, R=??
 #
