@@ -41,14 +41,20 @@ function Remove-HTMLTags {
                 '&nbsp;'," "
         )
 
+        # list items should start/end on a new line and each item should end on a new line
+        $stageTwo = $stageOne -replace
+            '<\/?[o|u]l>',"`n" -replace
+            '<li>'            -replace
+            '<\/li>',"`n"
 
-        $stageTwo = if ($ReplaceTagsWithLineBreaks.IsPresent) {
-            $stageOne -replace '<[^>]+?>',"`n"
+            # All other tags get replaced by nothing, unless a switch is present
+        $stageThree = if ($ReplaceTagsWithLineBreaks.IsPresent) {
+            $stageTwo -replace '<[^>]+?>',"`n"
         } else {
-            $stageOne -replace '<[^>]+?>'
+            $stageTwo -replace '<[^>]+?>'
         }
         
-        $stageTwo.Trim()
+        $stageThree.Trim()
     }
 
     end {}
