@@ -35,6 +35,9 @@ function Remove-HTMLTags {
         $stageOne = (
             $Html -replace 
                 '\s\s+',' ' -replace
+                '<\/li>',"`n" -replace
+                '<\/ul>',"`n" -replace
+                '<\/ol>',"`n" -replace
                 '<br>',"`n" -replace
                 '\\n',"`n" -replace
                 '&#160'," " -replace
