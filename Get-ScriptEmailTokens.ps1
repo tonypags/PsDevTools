@@ -56,7 +56,7 @@
             @(
                 # Tokenize the file content
                 $tokens = [System.Management.Automation.PSParser]::Tokenize($fileContent, [ref]$null) | Limit-TokenTypes
-                Search-EmailTokens -Recurse:($Recurse.IsPresent) -MaxDepth $MaxDepth -Tokens $tokens
+                if ($tokens) {Search-EmailTokens -Recurse:($Recurse.IsPresent) -MaxDepth $MaxDepth -Tokens $tokens}
 
             ).Foreach({
 
@@ -123,8 +123,8 @@ function Search-EmailTokens {
                 
                 if ($function.Source -notmatch $rgxIgnoreTheseSources -and $function.HelpUri -notmatch $rgxIgnoreTheseHelpUris) {
 
-                    $tokens = [System.Management.Automation.PSParser]::Tokenize($function.Definition,  [ref]$null) | Limit-TokenTypes
-                    Search-EmailTokens -Recurse -MaxDepth $MaxDepth -CurrentDepth ($CurrentDepth + 1) -Tokens $tokens
+                    $tokens = [System.Management.Automation.PSParser]::Tokenize($function.Definition, [ref]$null) | Limit-TokenTypes
+                    if ($tokens) {Search-EmailTokens -Recurse -MaxDepth $MaxDepth -CurrentDepth ($CurrentDepth + 1) -Tokens $tokens}
                 }
             }
 
