@@ -12,108 +12,143 @@
     Gets the email tokens from any functions called within the file
     #>
     [CmdletBinding()]
-
     param(
 
         # Object of the script file
         [Parameter(
-            ParameterSetName='byFile',
             ValueFromPipeline,
             ValueFromPipelineByPropertyName,
             Position=0
         )]
-        [Parameter(ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
-        [System.IO.FileInfo[]]
-        $File,
-
-        # Raw content of the script file
-        [Parameter(ParameterSetName='byContent')]
-        [Parameter(ValueFromPipeline)]
-        [System.String]
-        $String,
-
-
+        [string[]]
+        $Path,
 
         # Drill down into any called functions for emails defined deep in the codebase
         [Parameter()]
         [switch]
-        $Recurse
+        $Recurse,
+
+        # How deep to drill down into nested functions [0=no recusion; -1=no maximum]
+        [Parameter()]
+        [ValidateRange(-1,99)]
+        [int]
+        $MaxDepth=-1
 
     )#END: param
 
-    begin {
-        $ptnEmailAddress = '^.+@[^\.].*\.[a-z]{2,}$' # https://regexlib.com/REDetails.aspx?regexp_id=174
-        $rgxIgnoreTheseSources = '^Microsoft\.'
-    }
-
     process {
 
-        foreach ($item in $File) {
+        foreach ($item in $Path) {
+
+            $fileObj = Get-Item $item
 
             $hashObject = [ordered]@{
-                Filename = $item.Name
+                Filename = $fileObj.Name
                 EmailFound = $false
                 Addresses = [System.Collections.Generic.List[System.Object]]@()
-                MaxDepth = 0
-                Path = $item.FullName
+                Path = $fileObj.FullName
                 TaskHost = $env:COMPUTERNAME
             }
-            $fileContent = Get-Content $item.FullName -Raw
-            
-            # Tokenize the file content
-            ([System.Management.Automation.PSParser]::Tokenize(
-                $fileContent, [ref]$null)
-            ).Where(
-                {$_.Type -in ('Command','String')}
-            ).ForEach({
-                if ($_.Type -eq 'String') {
+            $fileContent = Get-Content $fileObj.FullName -Raw
 
-                    # Do the thing here
-                    # Do the thing here
-                    # Do the thing here
-                    # Do the thing here
-                    # Do the thing here
-                    # Do the thing here
-                    # Do the thing here
-                    $_ | Where-Object Content -match $ptnEmailAddress
+            # Run the tokens through the helper function
+            @(
+                # Tokenize the file content
+                $tokens = [System.Management.Automation.PSParser]::Tokenize($fileContent, [ref]$null) | Limit-TokenTypes
+                Search-EmailTokens -Recurse:($Recurse.IsPresent) -MaxDepth $MaxDepth -Tokens $tokens
 
-                } elseif ($_.Type -eq 'Command') {
+            ).Foreach({
 
-                    # find the function definition
-                    # find the function definition
-                    # find the function definition
-                    # find the function definition
-                    # find the function definition
-                    # find the function definition
-                    $function = $_.Content
-                    $source = (Get-Command $function).Source
-                    if ($source -notmatch $rgxIgnoreTheseSources) {
-                        $thisDefinition = (Get-Command $function).Definition
-                        # $thisTOKENIZED = [System.Management.Automation.PSParser]::Tokenize($definition, [ref]$null)
-                        # $thisTOKENIZED | Where-Object Type -eq 'String' | Where-Object Content -match $ptnEmailAddress | Format-Table
-
-                        # call myself
-                        # call myself
-                        # call myself
-                        # call myself
-                        # call myself
-                        # call myself
-                        Get-ScriptEmailTokens -String $thisDefinition -Recurse
-                    }
-
-                } else {
-                    Write-Error "Unhandled Type: $($_.Type)"
-                }
+                # Output any newly found email addresses
+                if ($hashObject.Addresses -notcontains $_) {$hashObject.Addresses.Add($_)}
+                
             })
+            
+            if ($hashObject.Addresses) {
+                $hashObject.EmailFound = $true
+                $hashObject.Addresses = $hashObject.Addresses | Sort-Object
+            }
+            
+            [PsCustomObject]$hashObject
 
-
-        }#END: foreach ($item in $Param1)
+        }#END: foreach ($item in $Path)
 
     }#END process
 
-    end {
-
-    }#END: end
-
 }#END: function Get-ScriptEmailTokens
+
+function Search-EmailTokens {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.PSToken[]]
+        $Tokens,
+
+        # Drill down into any called functions for emails defined deep in the codebase
+        [Parameter()]
+        [switch]
+        $Recurse,
+
+        # How deep to drill down into nested functions [0=no recusion; -1=no maximum]
+        [Parameter()]
+        [ValidateRange(-1,99)]
+        [int]
+        $MaxDepth=-1,
+
+        [Parameter()]
+        [int]
+        $CurrentDepth=0
+    )
+
+    if ($MaxDepth -eq -1) {<# NO MAX DEPTH #>} elseif ($CurrentDepth -gt $MaxDepth) {return}
+
+    $ptnEmailAddress = '^.+@[^\.].*\.[a-z]{2,}$' # https://regexlib.com/REDetails.aspx?regexp_id=174
+    $rgxIgnoreTheseSources = '^Microsoft\.|^Microsoft\.'
+    $rgxIgnoreTheseHelpUris = 'microsoft\.com'
+
+    foreach ($token in $Tokens) {
+        if ($token.Type -eq 'String') {
+
+            if ($token.Content -match $ptnEmailAddress) { $token.Content }
+
+        } elseif ($token.Type -eq 'Command') {
+            
+            if ($Recurse.IsPresent) {
+
+                $function = Try {Get-Command $token.Content -ea Stop} Catch {
+                    if ($_.Exception.Message -like '*is not recognized as the name of a cmdlet*') {continue}
+                    Write-Error $_
+                }
+                
+                if ($function.Source -notmatch $rgxIgnoreTheseSources -and $function.HelpUri -notmatch $rgxIgnoreTheseHelpUris) {
+
+                    $tokens = [System.Management.Automation.PSParser]::Tokenize($function.Definition,  [ref]$null) | Limit-TokenTypes
+                    Search-EmailTokens -Recurse -MaxDepth $MaxDepth -CurrentDepth ($CurrentDepth + 1) -Tokens $tokens
+                }
+            }
+
+        } else {
+            Write-Error "Unhandled Type: $($token.Type)"
+        }
+    }
+
+}#END: function Search-EmailTokens
+
+function Limit-TokenTypes {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory,ValueFromPipeline)]
+        [System.Management.Automation.PSToken[]]
+        $Tokens
+    )
+        
+    begin {
+        $limitToTypes = ('Command','String')
+    }
+
+    process {
+        @($Tokens).Where({ $_.Type -in $limitToTypes })
+    }
+
+}#END: function Limit-TokenTypes
