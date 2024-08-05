@@ -31,7 +31,7 @@ function Measure-Average {
     [CmdletBinding()]
 
     param(
-        # Array of numbers to average
+        # Array of numbers to average (allow null elements, we remove them in logic)
         [Parameter(Mandatory,Position=0)]
         [AllowNull()]
         [System.Object[]]
@@ -51,7 +51,12 @@ function Measure-Average {
     $Data = $Data | Where-Object {$null -ne $_}
     $count2 = ($Data | Measure-Object).Count
     $diffC = $count1 - $count2
-    if ($diffC) {Write-Warning "[Measure-Average] Filtered out $($diffC) null data point(s)"}
+    if ($count2) {
+        if ($diffC) {Write-Warning "[Measure-Average] Filtered out $($diffC) null data point(s)"}
+    } else {
+        Write-Error 'No values passed to function!'
+        return
+    }
 
     switch ($Average) {
 
