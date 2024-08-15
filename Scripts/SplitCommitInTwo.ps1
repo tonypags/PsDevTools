@@ -27,15 +27,15 @@ foreach ($item in $filesInCommit) {
 
     if ($status -eq 'M') {
         git add $file
-        git commit -n $file -m "$($file)`n$message"
+        git commit -n $file -m "$($file)`n$message`n"
 
     } elseif ($status -eq 'A') {
         git add $file
-        git commit -n $file -m "Added $($file)`n$message"
+        git commit -n $file -m "Added $($file)`n$message`n"
 
     } elseif ($status -eq 'D') {
         git rm $file
-        git commit -n $file -m "Removed $($file)`n$message"
+        git commit -n $file -m "Removed $($file)`n$message`n"
         
     } elseif ($status -eq 'R') {
 
