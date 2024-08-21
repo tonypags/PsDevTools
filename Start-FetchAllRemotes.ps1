@@ -25,6 +25,7 @@ function Start-FetchAllRemotes {
     if ($dotGit) {
         git fetch
         Write-Host 'OK' -ForegroundColor 'Green'
+        Start-Sleep -Seconds 5 # Give CPU/Malware Scanners a break
     } else {
         Write-Host 'Not linked to any remote repo' -f 'Green'
     }
