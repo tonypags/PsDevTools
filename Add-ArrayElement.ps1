@@ -97,7 +97,7 @@ function Add-ArrayElement {
             $Index = $intArray.IndexOf($Value)
         }
 
-        $maxIndex = @($intArray).Count - 1
+        $maxIndex = ($intArray|Measure-Object).Count - 1
 
         # Make sure that the Index isn't out of range
         # Then test other cases

@@ -13,7 +13,7 @@ $ErrorActionPreference = 'Stop'
 
 $message="$(git log --pretty=format:'%s' -n1)"
 
-if (@(git status --porcelain --untracked-files=no).Count -eq 0) {
+if ((git status --porcelain --untracked-files=no|Measure-Object).Count -eq 0) {
     git reset --soft HEAD^
 }
 
@@ -49,4 +49,4 @@ foreach ($item in $filesInCommit) {
     }
 }
 
-Write-Host "1 commit split into $(@($filesInCommit).Count) commits. Run ``git rebase --continue`` to proceed with rebase."
+Write-Host "1 commit split into $(($filesInCommit|Measure-Object).Count) commits. Run ``git rebase --continue`` to proceed with rebase."

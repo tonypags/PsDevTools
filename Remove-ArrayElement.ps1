@@ -86,7 +86,7 @@ function Remove-ArrayElement {
             $Index = $intArray.IndexOf($Value)
         }
         
-        $maxIndex = @($intArray).Count - 1
+        $maxIndex = ($intArray|Measure-Object).Count - 1
 
         if ($PSCmdlet.ParameterSetName -eq 'byIndex') {
 
