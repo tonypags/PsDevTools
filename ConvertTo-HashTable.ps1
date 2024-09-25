@@ -37,7 +37,6 @@ function ConvertTo-HashTable {
         [Parameter()]
         [switch]
         $Force
-
     )
     
     begin {
@@ -50,7 +49,6 @@ function ConvertTo-HashTable {
         )
         [string[]]$allowedVariables = @()
         [bool]$allowEnvVariables = $false
-    
     }
     
     process {
@@ -69,9 +67,7 @@ function ConvertTo-HashTable {
             } Catch {
                 throw "Unable to parse file content: $($_.exception.message)"
             }
-
         }
-
     }
     
     end {
@@ -82,7 +78,7 @@ function ConvertTo-HashTable {
         # Define a hashtable for all tasks (KEY=pathToParentFolder, VALUE=retentionInDays)
         Try {
             $scriptBlock = [scriptblock]::Create($strContent)
-            if ($Force) {} else {
+            if (-not $Force.IsPresent) {
                 $scriptBlock.CheckRestrictedLanguage(
                     $allowedCommands, $allowedVariables, $allowEnvVariables
                 )
@@ -92,7 +88,6 @@ function ConvertTo-HashTable {
             Write-Warning "$($_.exception.message)"
             throw "Unable to execute parsed text as a scriptblock!"
         }
-
     }
 
 }#END: function ConvertTo-HashTable {}
