@@ -104,7 +104,7 @@ function Search-EmailTokens {
     if ($MaxDepth -eq -1) {<# NO MAX DEPTH #>} elseif ($CurrentDepth -gt $MaxDepth) {return}
 
     $ptnEmailAddress = '^.+@[^\.].*\.[a-z]{2,}$' # https://regexlib.com/REDetails.aspx?regexp_id=174
-    $rgxIgnoreTheseSources = '^Az\.|^VMWare\.|^Microsoft\.'
+    $rgxIgnoreTheseSources = '^Az\.|^VMWare\.|^Microsoft\.|PnP\.PowerShell'
     $rgxIgnoreTheseHelpUris = 'microsoft\.com'
 
     foreach ($token in $Tokens) {
@@ -130,7 +130,7 @@ function Search-EmailTokens {
                     $tokens = [System.Management.Automation.PSParser]::Tokenize($function.Definition, [ref]$null) | Limit-TokenTypes
                     if ($tokens) {
                         $newDepth = $CurrentDepth + 1
-                        Write-Verbose " Recursion Depth: $('0:000' -f $CurrentDepth) | Function: [$($function.Name)]" -Verbose
+                        Write-Verbose " Recursion Depth: $('0:000' -f $CurrentDepth) | Module / Function: [$($function.Source) / $($function.Name)]" -Verbose
                         Search-EmailTokens -Recurse -MaxDepth $MaxDepth -CurrentDepth $newDepth -Tokens $tokens
                     }
                 }
