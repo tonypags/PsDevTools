@@ -4,12 +4,16 @@
     Tokenizes a script file and return email address values found.
     .EXAMPLE
     dir *.ps1 | Get-ScriptEmailTokens
-    
-    Gets the email tokens from the given file
+
+    Gets the email tokens from the given files in the path
+    .EXAMPLE
+    dir *.ps1 | Get-ScriptEmailTokens -Commands New-Thingy,Add-Thingy -Recurse
+
+    Gets the email tokens from either functions New-Thingy or Add-Thingy called within the files in the path
     .EXAMPLE
     dir *.ps1 | Get-ScriptEmailTokens -Recurse
 
-    Gets the email tokens from any functions called within the file
+    Gets the email tokens from any functions called within the files in the path
     #>
     [CmdletBinding()]
     param(
@@ -23,6 +27,11 @@
         [ValidateNotNullOrEmpty()]
         [string[]]
         $Path,
+
+        # Used to limit nested scanning to a given set of command/function names, by default no limits
+        [Parameter()]
+        [string[]]
+        $Commands,
 
         # Drill down into any called functions for emails defined deep in the codebase
         [Parameter()]
@@ -56,20 +65,23 @@
             @(
                 # Tokenize the file content
                 $tokens = [System.Management.Automation.PSParser]::Tokenize($fileContent, [ref]$null) | Limit-TokenTypes
-                if ($tokens) {Search-EmailTokens -Recurse:($Recurse.IsPresent) -MaxDepth $MaxDepth -Tokens $tokens}
+
+                if ($tokens) {
+                    Search-EmailTokens -Recurse:($Recurse.IsPresent) -MaxDepth $MaxDepth -Tokens $tokens -Commands $Commands
+                }
 
             ).Foreach({
 
                 # Output any newly found email addresses
                 if ($hashObject.Addresses -notcontains $_) {$hashObject.Addresses.Add($_)}
-                
+
             })
-            
+
             if ($hashObject.Addresses) {
                 $hashObject.EmailFound = $true
                 $hashObject.Addresses = $hashObject.Addresses | Sort-Object
             }
-            
+
             [PsCustomObject]$hashObject
 
         }#END: foreach ($item in $Path)
@@ -84,6 +96,11 @@ function Search-EmailTokens {
         [Parameter(Mandatory)]
         [System.Management.Automation.PSToken[]]
         $Tokens,
+
+        # Used to limit nested scanning to a given set of command/function names, by default no limits
+        [Parameter()]
+        [string[]]
+        $Commands,
 
         # Drill down into any called functions for emails defined deep in the codebase
         [Parameter()]
@@ -113,14 +130,20 @@ function Search-EmailTokens {
             if ($token.Content -match $ptnEmailAddress) { $token.Content }
 
         } elseif ($token.Type -eq 'Command') {
-            
+
+            # Discard commands if given a list
+            if (-not [string]::IsNullOrEmpty($Commands)) {
+                # include select commands
+                if ($token.Content -notin $Commands) {continue}
+            }
+
             if ($Recurse.IsPresent) {
 
                 $function = Try {Get-Command $token.Content -ea Stop} Catch {
                     if ($_.Exception.Message -like '*is not recognized as the name of a cmdlet*') {continue}
                     Write-Error $_
                 }
-                
+
                 if (
                     $function.Source -notmatch $rgxIgnoreTheseSources -and
                     $function.Name -notmatch '\.exe$' -and
@@ -150,9 +173,9 @@ function Limit-TokenTypes {
         [System.Management.Automation.PSToken[]]
         $Tokens
     )
-        
+
     begin {
-        $limitToTypes = ('Command','String')
+        $limitToTypes = Get-TokenTypes
     }
 
     process {
@@ -160,3 +183,7 @@ function Limit-TokenTypes {
     }
 
 }#END: function Limit-TokenTypes
+
+function Get-TokenTypes {
+    @('Command','String')
+}#END: function Get-TokenTypes
