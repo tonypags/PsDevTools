@@ -46,11 +46,17 @@
 
     )#END: param
 
+    begin {
+        $cachedSearches = @{} # commandName = emailAddresses
+        $Results = [System.Collections.Generic.List[System.Object]]@()
+    }
+
     process {
 
         foreach ($item in $Path) {
 
             $fileObj = Get-Item $item
+            if ($Results.Path -contains $fileObj.FullName) {continue}
 
             $hashObject = [ordered]@{
                 Filename = $fileObj.Name
@@ -61,28 +67,37 @@
             }
             $fileContent = Get-Content $fileObj.FullName -Raw
 
+            # Tokenize the SCRIPT file content
+            $tokens = [System.Management.Automation.PSParser]::Tokenize($fileContent, [ref]$null) | Limit-TokenTypes
+
             # Run the tokens through the helper function
-            @(
-                # Tokenize the file content
-                $tokens = [System.Management.Automation.PSParser]::Tokenize($fileContent, [ref]$null) | Limit-TokenTypes
+            foreach ($token in $tokens) {
 
-                if ($tokens) {
-                    Search-EmailTokens -Recurse:($Recurse.IsPresent) -MaxDepth $MaxDepth -Tokens $tokens -Commands $Commands
+                # if the token was already run, add it from the cache
+                if ($cachedSearches.Keys -contains $token) {
+
+                    # add token search result from existing cache
+                    $theseEmails = $cachedSearches.$token
+
+                } else {
+                    # else, run this token and add any results to the cache
+                    $theseEmails = Search-EmailTokens -Recurse:($Recurse.IsPresent) -MaxDepth $MaxDepth -Tokens $tokens -hashedCommands $cachedSearches -Commands $Commands
+                    if ($theseEmails) {$cachedSearches.$token = $theseEmails}
                 }
+            }
 
-            ).Foreach({
-
+            foreach ($address in $theseEmails) {
                 # Output any newly found email addresses
-                if ($hashObject.Addresses -notcontains $_) {$hashObject.Addresses.Add($_)}
+                if ($hashObject.Addresses -notcontains $address) {$hashObject.Addresses.Add($address)}
 
-            })
+            }
 
             if ($hashObject.Addresses) {
                 $hashObject.EmailFound = $true
                 $hashObject.Addresses = $hashObject.Addresses | Sort-Object
             }
 
-            [PsCustomObject]$hashObject
+            $Results.Add([PsCustomObject]$hashObject)
 
         }#END: foreach ($item in $Path)
 
@@ -96,6 +111,12 @@ function Search-EmailTokens {
         [Parameter(Mandatory)]
         [System.Management.Automation.PSToken[]]
         $Tokens,
+
+        # Maintained list of previously discovered tokens to avoid re-scanning a given command; commandName = emailAddresses[]
+        [Parameter(Mandatory)]
+        [AllowNull()]
+        [hashtable]
+        $hashedCommands,
 
         # Used to limit nested scanning to a given set of command/function names, by default no limits
         [Parameter()]
@@ -121,41 +142,40 @@ function Search-EmailTokens {
     if ($MaxDepth -eq -1) {<# NO MAX DEPTH #>} elseif ($CurrentDepth -gt $MaxDepth) {return}
 
     $ptnEmailAddress = '^.+@[^\.].*\.[a-z]{2,}$' # https://regexlib.com/REDetails.aspx?regexp_id=174
-    $rgxIgnoreTheseSources = '^Az\.|^VMWare\.|^Microsoft\.|PnP\.PowerShell'
-    $rgxIgnoreTheseHelpUris = 'microsoft\.com'
+    $ptnXmlCredential = '\\.+\.xml$'
+
+    # $Searches = [System.Collections.Generic.List[System.Object]]@()
+    $ignoreSomeCommands = -not [string]::IsNullOrEmpty($Commands)
 
     foreach ($token in $Tokens) {
         if ($token.Type -eq 'String') {
 
-            if ($token.Content -match $ptnEmailAddress) { $token.Content }
+            if ($token.Content -match $ptnXmlCredential) {continue} # cred files do contain email-like strings
+            if ($token.Content -match $ptnEmailAddress) {$token.Content} # then look for email pattern
 
         } elseif ($token.Type -eq 'Command') {
 
-            # Discard commands if given a list
-            if (-not [string]::IsNullOrEmpty($Commands)) {
-                # include select commands
-                if ($token.Content -notin $Commands) {continue}
-            }
+            # Discard commands if given a list; include select commands
+            if ($ignoreSomeCommands -and $token.Content -notin $Commands) {continue}
 
             if ($Recurse.IsPresent) {
 
                 $function = Try {Get-Command $token.Content -ea Stop} Catch {
-                    if ($_.Exception.Message -like '*is not recognized as the name of a cmdlet*') {continue}
+                    if ($_.Exception.Message -like '*is not recognized as the name of a cmdlet*') {
+                        # What about Private functions? Those will behave just like a missing function
+                        # What about Private functions? Those will behave just like a missing function
+                        # What about Private functions? Those will behave just like a missing function
+                        # What about Private functions? Those will behave just like a missing function
+                        continue
+                    }
                     Write-Error $_
                 }
 
-                if (
-                    $function.Source -notmatch $rgxIgnoreTheseSources -and
-                    $function.Name -notmatch '\.exe$' -and
-                    $function.HelpUri -notmatch $rgxIgnoreTheseHelpUris
-                ) {
-
-                    $tokens = [System.Management.Automation.PSParser]::Tokenize($function.Definition, [ref]$null) | Limit-TokenTypes
-                    if ($tokens) {
-                        $newDepth = $CurrentDepth + 1
-                        Write-Verbose " Recursion Depth: $('0:000' -f $CurrentDepth) | Module / Function: [$($function.Source) / $($function.Name)]" -Verbose
-                        Search-EmailTokens -Recurse -MaxDepth $MaxDepth -CurrentDepth $newDepth -Tokens $tokens
-                    }
+                $tokens = [System.Management.Automation.PSParser]::Tokenize($function.Definition, [ref]$null) | Limit-TokenTypes
+                if ($tokens) {
+                    $newDepth = $CurrentDepth + 1
+                    Write-Verbose " Recursion Depth: $('0:000' -f $newDepth) | Module / Function: [$($function.Source) / $($function.Name)]" -Verbose
+                    Search-EmailTokens -Recurse -MaxDepth $MaxDepth -CurrentDepth $newDepth -Tokens $tokens -hashedCommands $hashedCommands
                 }
             }
 
