@@ -142,7 +142,9 @@ function Search-EmailTokens {
     if ($MaxDepth -eq -1) {<# NO MAX DEPTH #>} elseif ($CurrentDepth -gt $MaxDepth) {return}
 
     $ptnEmailAddress = '^.+@[^\.].*\.[a-z]{2,}$' # https://regexlib.com/REDetails.aspx?regexp_id=174
-    $ptnXmlCredential = '\\.+\.xml$'
+    $ptnXmlCredential = '\\.+\.xml$' # cred file names contain a username@domain.tld pattern
+    $ptnEmailBody1 = 'Please inform .+?@nfl.com of the status' # Emails listed in body text are not being sent any reports
+    $ptnEwsQuery1 = '\.folders[\.\w]+?\([''"][\.\w-]+?@nfl\.com[''"]\)\.?' # getting mailbox data uses email as parameter
 
     # $Searches = [System.Collections.Generic.List[System.Object]]@()
     $ignoreSomeCommands = -not [string]::IsNullOrEmpty($Commands)
@@ -150,6 +152,22 @@ function Search-EmailTokens {
     foreach ($token in $Tokens) {
         if ($token.Type -eq 'String') {
 
+            ###NOTE: This won't work since we are matching the token "Content", not the full line of code.
+            # We need to reference the full line of code in some way. Another property? It only has line number, maybe we can call up the token tree, so to speak.
+            if ($token.Content -match $ptnEwsQuery1) {continue} # ews queries do contain emails
+            # We need to reference the full line of code in some way.
+            # We need to reference the full line of code in some way.
+            # We need to reference the full line of code in some way.
+            # We need to reference the full line of code in some way.
+
+            # I think it would be easier to ignore any string that is not just an email address and only an email address.
+            if ($token.Content -match $ptnEmailBody1) {continue} # Emails listed in body text are not being sent any reports
+            # I think it would be easier to ignore any string that is not just an email address and only an email address.
+            # I think it would be easier to ignore any string that is not just an email address and only an email address.
+            # I think it would be easier to ignore any string that is not just an email address and only an email address.
+            # I think it would be easier to ignore any string that is not just an email address and only an email address.
+            
+            # Only match on email strings used to send reports or other notices
             if ($token.Content -match $ptnXmlCredential) {continue} # cred files do contain email-like strings
             if ($token.Content -match $ptnEmailAddress) {$token.Content} # then look for email pattern
 
